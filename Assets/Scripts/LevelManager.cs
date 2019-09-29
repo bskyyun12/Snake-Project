@@ -59,7 +59,8 @@ public class LevelManager : MonoBehaviour
         TextAsset bindData = Resources.Load(SceneManager.GetActiveScene().name) as TextAsset;
 
         // replace newline to empty
-        string data = bindData.text.Replace(Environment.NewLine, string.Empty);
+        //string data = bindData.text.Replace(Environment.NewLine, string.Empty);
+        string data = bindData.text.Replace("\n", string.Empty);
 
         // split data using - and return the split data
         return data.Split('-');
