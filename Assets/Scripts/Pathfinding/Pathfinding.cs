@@ -34,24 +34,19 @@ public class Pathfinding : MonoBehaviour
         Node startNode = grid.NodeFromWorldPoint(startPos);
         Node targetNode = grid.NodeFromWorldPoint(targetPos);
 
-        /// <summary>
-        /// related to Heap.. difficult to understand
-        /// </summary>
-        //Heap<Node> openSet = new Heap<Node>(grid.MaxSize);
+        // start from current snake's node and add its neighbours to openSet
         List<Node> openSet = new List<Node>();
+        // add the node where the snake was
         HashSet<Node> closeSet = new HashSet<Node>();
 
         openSet.Add(startNode);
 
         while (openSet.Count > 0)
         {
-            /// <summary>
-            /// related to Heap.. difficult to understand
-            /// </summary>
-            //Node currentNode = openSet.RemoveFirst();
             Node currentNode = openSet[0];
             for (int i = 1; i < openSet.Count; i++)
             {
+                // cheapest cost node will be current node
                 if (openSet[i].fCost < currentNode.fCost || openSet[i].fCost == currentNode.fCost && openSet[i].hCost < currentNode.hCost)
                 {
                     currentNode = openSet[i];
@@ -61,6 +56,7 @@ public class Pathfinding : MonoBehaviour
             openSet.Remove(currentNode);
             closeSet.Add(currentNode);
 
+            // if get the target node
             if (currentNode == targetNode)
             {
                 RetracePath(startNode, targetNode);
@@ -69,6 +65,7 @@ public class Pathfinding : MonoBehaviour
 
             foreach (Node neighbour in grid.GetNeighbours(currentNode))
             {
+                // skip all non walkable nodes and nodes in closeSet
                 if (!neighbour.walkable || closeSet.Contains(neighbour))
                 {
                     continue;
@@ -77,8 +74,8 @@ public class Pathfinding : MonoBehaviour
                 int newMovementCostToNeighbour = currentNode.gCost + GetDistance(currentNode, neighbour);
                 if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour))
                 {
-                    neighbour.gCost = newMovementCostToNeighbour;
-                    neighbour.hCost = GetDistance(neighbour, targetNode);
+                    neighbour.gCost = newMovementCostToNeighbour;   // cost between currentNode and neighbour + currentNode's gcost
+                    neighbour.hCost = GetDistance(neighbour, targetNode);   // cost between neighbour and targetNode
                     neighbour.parent = currentNode;
 
                     if (!openSet.Contains(neighbour))
@@ -90,6 +87,9 @@ public class Pathfinding : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// save the list of path nodes and use it in Grid and Snake script
+    /// </summary>
     void RetracePath(Node startNode, Node endNode)
     {
         List<Node> path = new List<Node>();
@@ -106,6 +106,7 @@ public class Pathfinding : MonoBehaviour
         snake.GetComponent<Snake>().path = path;
     }
 
+    // get x and y's node differences between two nodes and get distance value with them
     int GetDistance(Node nodeA, Node nodeB)
     {
         int dstX = Mathf.Abs(nodeA.gridX - nodeB.gridX);

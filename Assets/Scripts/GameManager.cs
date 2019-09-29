@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
@@ -15,27 +12,30 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private Apple apple;
 
-    [SerializeField]
     private LevelManager levelManager;
 
     public LinkedList list;
 
     private GameObject[] tiles;
 
+    // buttons and texts
     GameObject GameOverButtons;
     GameObject ClearButtons;
-
     Text centerText;
     Text rightTopText;
 
+    // count before game starts
     bool count = true;
     float time = 4f;
 
+    // It won't pause game when gameover or clear
     bool gameover = false;
     bool clear = false;
 
+    // score to clear level
     int targetScore;
 
+    // property for list
     public LinkedList List
     {
         get
@@ -46,6 +46,8 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        // create level
+        levelManager = GameObject.Find("LevelManager").GetComponent<LevelManager>();
         levelManager.CreateLevel();
 
         apple.SpawnApple();
@@ -53,27 +55,27 @@ public class GameManager : MonoBehaviour
         // Set snake position on top of random tile's position
         snake = GameObject.Find("Snake");
         tiles = GameObject.FindGameObjectsWithTag("Tile");
-        snake.transform.position = tiles[100].transform.position;
+        int ranNum = Random.Range(0, tiles.Length);
+        snake.transform.position = tiles[ranNum].transform.position;
 
+        // add snake to linkedList
         list = new LinkedList();
         list.AddToEnd(snake);
 
         GameOverButtons = GameObject.Find("GameOverButtons");
-        GameOverButtons.SetActive(false);
-
         ClearButtons = GameObject.Find("ClearButtons");
+        GameOverButtons.SetActive(false);
         ClearButtons.SetActive(false);
 
         centerText = GameObject.Find("CenterText").GetComponent<Text>();
         rightTopText = GameObject.Find("RightTopText").GetComponent<Text>();
-        Time.timeScale = 0;
 
         targetScore = tiles.Length / 5;
     }
 
     public void PauseGame(bool paused)
     {
-        if (!gameover && !clear)
+        if (!gameover && !clear && !count)
         {
             if (paused)
             {
@@ -93,6 +95,7 @@ public class GameManager : MonoBehaviour
     {
         if (count)
         {
+            Time.timeScale = 0;
             time -= Time.unscaledDeltaTime;
             centerText.text = ((int)time).ToString();
             if (time <= 0)
@@ -106,13 +109,6 @@ public class GameManager : MonoBehaviour
 
     }
 
-    public void Clear()
-    {
-        centerText.text = "Clear!";
-        ClearButtons.SetActive(true);
-        Time.timeScale = 0;
-        clear = true;
-    }
 
     public void GameOver()
     {
@@ -126,10 +122,12 @@ public class GameManager : MonoBehaviour
 
     public void AddTail()
     {
+        // spawn a tail where the snake is
         if (list.Count == 1)
         {
             tail = Instantiate(tail, snake.transform.position, Quaternion.identity, snake.transform);
         }
+        // spawn a tail at the end of tail
         else
         {
             tail = Instantiate(tail, list[list.Count - 1].transform.position, Quaternion.identity, snake.transform);
@@ -143,6 +141,13 @@ public class GameManager : MonoBehaviour
         {
             Clear();
         }
+    }
 
+    public void Clear()
+    {
+        centerText.text = "Clear!";
+        ClearButtons.SetActive(true);
+        Time.timeScale = 0;
+        clear = true;
     }
 }

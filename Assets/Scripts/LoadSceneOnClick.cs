@@ -18,7 +18,7 @@ public class LoadSceneOnClick : MonoBehaviour
     {
         int sceneIndex = int.Parse(gameObject.GetComponentInChildren<Text>().text);
 
-        SceneManager.LoadScene(int.Parse(gameObject.GetComponentInChildren<Text>().text));
+        SceneManager.LoadScene(sceneIndex);
     }
 
     public void Restart()
@@ -28,7 +28,7 @@ public class LoadSceneOnClick : MonoBehaviour
 
     public void NextLevel()
     {
-
+        // if there is next scene
         if (SceneManager.GetActiveScene().buildIndex + 1 != SceneManager.sceneCountInBuildSettings)
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);

@@ -5,9 +5,6 @@ using UnityEngine;
 
 public class Snake : MonoBehaviour
 {
-    private Vector2 direction;
-    private Rigidbody2D myRigidbody;
-
     [SerializeField]
     private GameManager gameManager;
 
@@ -43,9 +40,8 @@ public class Snake : MonoBehaviour
 
     private void Start()
     {
+        // To make Snake to move right in the beginning
         curDirection = Direction.right;
-        myRigidbody = GetComponent<Rigidbody2D>();
-
     }
 
     // Update is called once per frame
@@ -94,6 +90,8 @@ public class Snake : MonoBehaviour
         down = Input.GetButtonDown("Down");
         left = Input.GetButtonDown("Left");
         right = Input.GetButtonDown("Right");
+
+        // Break the pause
         if (up || down || left || right)
         {
             gameManager.PauseGame(false);
@@ -120,6 +118,9 @@ public class Snake : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Change MoveRate depends on the tile's type and depends on if AI is playing
+    /// </summary>
     void SetMoveRate(bool isAIPlaying)
     {
         tiles = GameObject.FindGameObjectsWithTag("Tile");
@@ -158,18 +159,18 @@ public class Snake : MonoBehaviour
 
     public void Move()
     {
+        // find all the tails and set their nodes' walkable value to false
         GameObject[] obstacles = GameObject.FindGameObjectsWithTag("Obstacle");
         foreach (GameObject obstacle in obstacles)
         {
             grid.ChangeWalkableValue(obstacle, false);
         }
 
-        // save the previous position before moving
+        // save positions before moving
         List<Vector3> snakeParts = new List<Vector3>();
         for (int i = 0; i < gameManager.list.Count; i++)
         {
             snakeParts.Add(gameManager.list[i].transform.position);
-            //grid.ChangeWalkableValue(gameManager.list[i].transform.position, true);
         }
 
 
@@ -193,43 +194,34 @@ public class Snake : MonoBehaviour
                     x += 1;
                     break;
             }
-            Vector2 prePosition = transform.position;
 
             transform.Translate(new Vector2(x, y));
 
-            //LinkedList.Node currentNode = gameManager.list.headNode;
-
-            //while (currentNode.next != null)
-            //{
-            //    currentNode = currentNode.next;
-            //    Vector2 oldPosition = currentNode.data.transform.position;
-            //    currentNode.data.transform.position = prePosition;
-            //    prePosition = oldPosition;
-            //}
         }
         else
         {
+            // get distance(how many nodes) between the snake and the apple
             int dstX = Mathf.Abs(grid.NodeFromWorldPoint(transform.position).gridX - grid.NodeFromWorldPoint(GameObject.Find("Apple(Clone)").transform.position).gridX);
             int dstY = Mathf.Abs(grid.NodeFromWorldPoint(transform.position).gridY - grid.NodeFromWorldPoint(GameObject.Find("Apple(Clone)").transform.position).gridY);
             int dst = dstX + dstY;
 
-            print("path.Count : " + path.Count + " | dst : " + dst);
-
+            // if distance is greater than 1 but path is 1 or path is 0
             if ((dst > 1 && path.Count == 1) || path.Count == 0)
             {
-                print("no path");
+                // There is no path. 
+                // getting neighbour nodes from snake's current node and move the snake to its neighbour if the neighbour is walkable.
                 neighbours = grid.GetNeighbours(grid.NodeFromWorldPoint(transform.position));
 
                 for (int i = 0; i < neighbours.Count; i++)
                 {
                     if (neighbours[i].walkable)
                     {
-                        print("55555555555555");
                         transform.position = neighbours[i].worldPosition;
                         break;
                     }
                 }
             }
+            // if there is path, move the snake to the first index node value in path
             else if (path.Count != 0 && path[0] != grid.NodeFromWorldPoint(transform.position))
             {
                 transform.position = path[0].worldPosition;
@@ -237,17 +229,17 @@ public class Snake : MonoBehaviour
         }
 
 
-        //move the tails to the previous position saved above
+        // move the tails to the previous position saved above
         for (int i = 0; i < gameManager.list.Count; i++)
         {
             if (i != 0)
             {
                 gameManager.list[i].transform.position = snakeParts[i - 1];
-                //grid.ChangeWalkableValue(gameManager.list[i].transform.position, false);
                 gameManager.list[i].tag = "Obstacle";
             }
         }
 
+        // make sure all the tiles are walkable but all the obstacles are not walkable.
         tiles = GameObject.FindGameObjectsWithTag("Tile");
         foreach (GameObject tile in tiles)
         {
@@ -258,18 +250,4 @@ public class Snake : MonoBehaviour
             }
         }
     }
-
-    //wanted to use this func but failed..
-    //public void MoveTailTo(Vector2 position, LinkedList.Node obj)
-    //{       
-
-    //    if (obj.next != null)
-    //    {
-    //        Vector2 oldPosition = obj.next.data.transform.position;
-    //        obj.next.data.transform.position = position;
-    //        MoveTailTo(oldPosition, obj.next);
-    //    }
-    //}
-
-
 }
